@@ -8,18 +8,36 @@ const showMovieList = async (req, res) => {
   try {
     const { sort, order, limit, offset, title, search, actor } = req.query;
 
-    let sortOptions = [["id", "ASC"]];
-
     if (sort) {
       if (sort === "title") {
-        sortOptions = [
-          [
-            Sequelize.literal(
-              `LOWER(title) ${order === "DESC" ? "DESC" : "ASC"}`
-            ),
-          ],
-        ];
-      } else if (sort === "year") {
+        let sortOrder = "ASC";
+        if (order && order === "DESC") {
+          sortOrder = "DESC";
+        }
+
+        let movies = await Movie.findAll({
+          include: [Actor],
+          limit: limit ? parseInt(limit) : null,
+          offset: offset ? parseInt(offset) : null,
+        });
+
+        if (!movies || movies.length === 0) {
+          return res.status(404).json(moviesListNotFoundError);
+        }
+
+        movies = movies.sort((a, b) => {
+          return a.title.localeCompare(b.title, "uk-UA", {
+            sensitivity: "base",
+          });
+        });
+
+        if (sortOrder === "DESC") {
+          movies.reverse();
+        }
+        return res.status(200).json(formatMoviesListResponse(movies));
+      }
+
+      if (sort === "year") {
         sortOptions = [["year", order === "DESC" ? "DESC" : "ASC"]];
       }
     }
