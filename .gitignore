@@ -1,3 +1,6 @@
+# uploaded files
+/uploads
+
 # dependencies
 /node_modules
 /.pnp

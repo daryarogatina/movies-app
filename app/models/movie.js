@@ -3,7 +3,7 @@ const Sequelize = require("sequelize");
 module.exports = (sequelize) => {
   const Movie = sequelize.define("Movie", {
     title: {
-      type: Sequelize.STRING,
+      type: Sequelize.CITEXT,
       allowNull: false,
     },
     year: {
