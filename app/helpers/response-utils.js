@@ -35,6 +35,30 @@ const formatMoviesListResponse = (movies) => {
   };
 };
 
+
+const formatMoviesWithActorsResponse = (movies) => {
+  return {
+    data: movies.map((movie) => ({
+      id: movie.id,
+      title: movie.title,
+      year: movie.year,
+      format: movie.format,
+      actors: movie.Actors.map(({ id, name, createdAt, updatedAt }) => ({
+        id,
+        name,
+        createdAt,
+        updatedAt,
+      })),
+      createdAt: movie.createdAt,
+      updatedAt: movie.updatedAt,
+    })),
+    meta: {
+      total: movies.length,
+    },
+    status: 1,
+  };
+};
+
 const formatImportedMoviesResponse = (importedMovies) => {
   return {
     data: importedMovies.map((movie) => ({
@@ -57,4 +81,6 @@ module.exports = {
   formatMovieResponse,
   formatMoviesListResponse,
   formatImportedMoviesResponse,
+  formatMoviesWithActorsResponse
 };
+

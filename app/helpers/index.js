@@ -7,6 +7,7 @@ const { moviesListNotFoundError } = require("./movies-errors");
 const { formatMovieResponse } = require("./response-utils");
 const { formatMoviesListResponse } = require("./response-utils");
 const { formatImportedMoviesResponse } = require("./response-utils");
+const {formatMoviesWithActorsResponse } = require("./response-utils");
 
 module.exports = {
   movieExistsError,
@@ -18,4 +19,6 @@ module.exports = {
   formatMovieResponse,
   formatMoviesListResponse,
   formatImportedMoviesResponse,
+  formatMoviesWithActorsResponse
+
 };
