@@ -1,7 +1,8 @@
-const { Actor, Movie } = require("../models");
+const { Actor, Movie, MovieActor } = require("../models");
 const Sequelize = require("sequelize");
 const { moviesListNotFoundError } = require("../helpers/index.js");
 const { formatMoviesListResponse } = require("../helpers/index.js");
+const { formatMoviesWithActorsResponse } = require("../helpers/index.js");
 
 const showMovieList = async (req, res) => {
   try {
@@ -11,7 +12,13 @@ const showMovieList = async (req, res) => {
 
     if (sort) {
       if (sort === "title") {
-        sortOptions = [["title", order === "DESC" ? "DESC" : "ASC"]];
+        sortOptions = [
+          [
+            Sequelize.literal(
+              `LOWER(title) ${order === "DESC" ? "DESC" : "ASC"}`
+            ),
+          ],
+        ];
       } else if (sort === "year") {
         sortOptions = [["year", order === "DESC" ? "DESC" : "ASC"]];
       }
@@ -43,15 +50,43 @@ const showMovieList = async (req, res) => {
     }
 
     if (actor) {
-      searchConditions.push({
-        [Sequelize.Op.or]: [
+      const takeActors = await Actor.findAll({
+        attributes: [],
+        where: {
+          name: {
+            [Sequelize.Op.like]: `%${actor}%`,
+          },
+        },
+        include: [
           {
-            "$Actors.name$": {
-              [Sequelize.Op.like]: `%${actor}%`,
-            },
+            model: Movie,
           },
         ],
       });
+
+      let actorsArray = [];
+      if (takeActors) {
+        takeActors.forEach((actor) =>
+          actor.Movies.forEach((movie) => {
+            actorsArray.push(movie.id);
+          })
+        );
+      }
+
+      const actorsMovies = await Movie.findAll({
+        where: {
+          id: {
+            [Sequelize.Op.in]: actorsArray,
+          },
+        },
+        include: [
+          {
+            model: Actor,
+          },
+        ],
+      });
+
+      return res.status(200).json(formatMoviesWithActorsResponse(actorsMovies));
     }
 
     if (searchConditions.length > 0) {
@@ -65,7 +100,6 @@ const showMovieList = async (req, res) => {
     if (!movies || movies.length === 0) {
       return res.status(404).json(moviesListNotFoundError);
     }
-
     res.status(200).json(formatMoviesListResponse(movies));
   } catch (error) {
     console.error(error);
