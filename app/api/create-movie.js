@@ -12,6 +12,15 @@ const createMovie = async (req, res) => {
       return res.status(400).json(movieExistsError);
     }
 
+    const invalidActors = actors.filter(actor => {
+      const regex = /^[A-Za-z\-,\s]+$/;
+      return !regex.test(actor);
+    });
+
+    if (invalidActors.length > 0) {
+      return res.status(400).json({ error: "Actor names must not contain numbers or symbols except ',' and '-'." });
+    }
+
     const newMovie = await Movie.create({ title, year, format });
 
     const createdActors = await Promise.all(
